@@ -113,23 +113,9 @@ const startServer = async () => {
     });
   }
 
-  const listenOnPort = (port) => {
-    server.once('error', (error) => {
-      if (error.code === 'EADDRINUSE') {
-        console.warn(`Port ${port} is busy, trying ${port + 1}...`);
-        listenOnPort(port + 1);
-        return;
-      }
-
-      throw error;
-    });
-
-    server.listen(port, () => {
-      console.log(`Server running on http://localhost:${port}`);
-    });
-  };
-
-  listenOnPort(DEFAULT_PORT);
+  server.listen(DEFAULT_PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${DEFAULT_PORT}`);
+});
 };
 
 startServer();
