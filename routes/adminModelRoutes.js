@@ -14,6 +14,7 @@ const {
 const authMiddleware = require('../middleware/authMiddleware');
 const requireAdmin = require('../middleware/adminMiddleware');
 const { profileImageUpload, mediaUpload } = require('../middleware/uploadMiddleware');
+const { setDefaultModel } = require("../controllers/modelController");
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.use(requireAdmin);
 
 router.get('/', listModelsAdmin);
 router.post('/', profileImageUpload, createModel);
+router.patch("/:modelId/default", setDefaultModel);
 router.get('/:modelId', getAdminModelDetails);
 router.put('/:modelId', updateModel);
 router.put('/:modelId/profile-image', profileImageUpload, updateProfileImage);

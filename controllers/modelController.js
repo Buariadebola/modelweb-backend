@@ -398,6 +398,44 @@ const updateModel = async (req, res, next) => {
   }
 };
 
+const getDefaultModel = async (req, res, next) => {
+  try {
+    let model = await Model.findOne({
+      isDefault: true,
+      isActive: true,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Safety fallback:
+    // If no model is marked default, use the newest active model.
+    if (!model) {
+      model = await Model.findOne({
+        isActive: true,
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+    }
+
+    if (!model) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active model is available.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        model: stripSensitiveModelData(model),
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
 const updateProfileImage = async (req, res, next) => {
   try {
     const { modelId } = req.params;
@@ -568,4 +606,5 @@ module.exports = {
   stripSensitiveModelData,
   parseBoolean,
   makeSlug,
+  getDefaultModel,
 };

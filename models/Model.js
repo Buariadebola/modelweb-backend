@@ -29,6 +29,13 @@ const modelSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
+    isDefault: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
     profileImage: {
       type: String,
       default: '',
