@@ -436,35 +436,29 @@ const getDefaultModel = async (req, res, next) => {
 };
 
 
-const setDefaultModel = async (req, res, next) => {
+const setDefaultModel = async (modelId) => {
   try {
-    const { modelId } = req.params;
-
-    const accessCheck = await ensureModelAccess(req, res, modelId, false);
-    if (accessCheck.error) {
-      return accessCheck.error;
-    }
-
-    const model = accessCheck.model;
-
-    // Clear the previous default flag before promoting the new model.
-    await Model.updateMany(
-      { isDefault: true, _id: { $ne: model._id } },
-      { $set: { isDefault: false } }
+    const response = await api.patch(
+      `/admin/models/${modelId}/default`
     );
 
-    model.isDefault = true;
-    await model.save();
+    const updatedModel = response.data?.data?.model;
 
-    return res.json({
-      success: true,
-      message: 'Default model set successfully.',
-      data: {
-        model: stripSensitiveModelData(model),
-      },
-    });
+    if (!updatedModel) {
+      throw new Error('Updated model was not returned by the server.');
+    }
+
+    setModels((currentModels) =>
+      currentModels.map((item) => ({
+        ...item,
+        isDefault: String(item._id || item.id) === String(modelId),
+      }))
+    );
+
+    return normalizeModel(updatedModel);
   } catch (error) {
-    return next(error);
+    console.error('Failed to set default model:', error);
+    throw error;
   }
 };
 
