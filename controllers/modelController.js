@@ -436,6 +436,39 @@ const getDefaultModel = async (req, res, next) => {
 };
 
 
+const setDefaultModel = async (req, res, next) => {
+  try {
+    const { modelId } = req.params;
+
+    const accessCheck = await ensureModelAccess(req, res, modelId, false);
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const model = accessCheck.model;
+
+    // Clear the previous default flag before promoting the new model.
+    await Model.updateMany(
+      { isDefault: true, _id: { $ne: model._id } },
+      { $set: { isDefault: false } }
+    );
+
+    model.isDefault = true;
+    await model.save();
+
+    return res.json({
+      success: true,
+      message: 'Default model set successfully.',
+      data: {
+        model: stripSensitiveModelData(model),
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
 const updateProfileImage = async (req, res, next) => {
   try {
     const { modelId } = req.params;
@@ -607,4 +640,5 @@ module.exports = {
   parseBoolean,
   makeSlug,
   getDefaultModel,
+  setDefaultModel,
 };
